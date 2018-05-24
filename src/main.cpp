@@ -20,7 +20,7 @@ int** initialMatrix;
 int cost = 0;
 int* matchingFunction;
 
-int** Init(){
+int** init(){
 
     fstream inFile;
     inFile.open("in.txt");
@@ -36,10 +36,12 @@ int** Init(){
         src->end = i;
         src->weight = 0;
         lineVector.push_back(*src);
+        delete src;
     }
 
     adjacencyList.push_back(lineVector);
     lineVector.clear();
+    lineVector.shrink_to_fit();
 
     for(int i = 1; i <= programs; i++){
         for(int j = 1; j <= computers; j++){
@@ -48,10 +50,12 @@ int** Init(){
             e->beg = i;
             e->end = j + programs;
             lineVector.push_back(*e);
+            delete e;
         }
     }
     adjacencyList.push_back(lineVector);
     lineVector.clear();
+    lineVector.shrink_to_fit();
 
 
     for(int i = programs + 1; i <= 2 * programs; i++){
@@ -60,9 +64,11 @@ int** Init(){
         t->end = 2 * programs + 1;
         t->weight = 0;
         lineVector.push_back(*t);
+        delete t;
     }
     adjacencyList.push_back(lineVector);
     lineVector.clear();
+    lineVector.shrink_to_fit();
 
     inFile.close();
 
@@ -102,6 +108,14 @@ int** Init(){
     for(int i = 0; i < programs; i++){
         matchingFunction[i] = -1;
     }
+
+    for(unsigned int i = 0; i < adjacencyList.size(); i++){
+        adjacencyList[i].clear();
+        adjacencyList[i].shrink_to_fit();
+    }
+    adjacencyList.clear();
+    adjacencyList.shrink_to_fit();
+
 
     return matrix;
 
@@ -148,7 +162,7 @@ void getPath(int* pred, int j){
     e->beg = pred[j];
     e->end = j;
     edges.push_back(*e);
-
+    delete e;
 }
 
 void reverseEdges(int** graph){
@@ -227,14 +241,18 @@ bool succesiveShortestPath(int** graph, int source){
         }
         outFile << endl << cost;
         outFile.close();
-        return true;
+        match = true;
     } else if(flag == 0){
-        return true;
+        match = true;
     }
 
     //n
     reverseEdges(graph);
     edges.clear();
+    edges.shrink_to_fit();
+    delete[] distDijkstra;
+    delete[] finished;
+    delete[] pred;
 
     return match;
 
@@ -244,14 +262,20 @@ bool succesiveShortestPath(int** graph, int source){
 
 int main(){
 
-    int** graph = new int* [vertices];
-    for(int i = 0 ; i < vertices; i++){
-        graph[i] = new int[vertices];
-    }
-
-    graph = Init();
+    int** graph = init();
 
     while(!succesiveShortestPath(graph, 0));
+
+    for(int i = 0; i < vertices; i++) {
+        delete[] graph[i];
+    }
+    delete[] graph;
+
+    for(int i = 0 ; i < vertices; i++){
+        delete[] initialMatrix[i];
+    }
+    delete[] initialMatrix;
+    delete[] matchingFunction;
 
     return 0;
 
